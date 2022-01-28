@@ -317,7 +317,6 @@ async def fetch_info(chat, event):
             caption += f", <code>{slowmode_time}s</code>\n\n"
         else:
             caption += "\n\n"
-    if not broadcast:
         caption += f"Supergroup: {supergroup}\n\n"
     if hasattr(chat_obj_info, "restricted"):
         caption += f"Restricted: {restricted}\n"
@@ -377,9 +376,6 @@ async def _(event):
                     )
                 except Exception as e:
                     return await event.edit(str(e))
-            await event.edit("`Invited Successfully`")
-            await sleep(3)
-            await event.delete()
         else:
             # https://lonamiwebs.github.io/Telethon/methods/channels/invite_to_channel.html
             for user_id in to_add_users.split():
@@ -393,9 +389,10 @@ async def _(event):
                     )
                 except Exception as e:
                     return await event.edit(str(e))
-            await event.edit("`Invited Successfully`")
-            await sleep(3)
-            await event.delete()
+
+        await event.edit("`Invited Successfully`")
+        await sleep(3)
+        await event.delete()
 
 
 @register(outgoing=True, pattern=r"^\.kickme$")
@@ -443,8 +440,7 @@ async def keep_read(message):
         from userbot.modules.sql_helper.keep_read_sql import is_kread
     except AttributeError:
         return
-    kread = is_kread()
-    if kread:
+    if kread := is_kread():
         for i in kread:
             if i.groupid == str(message.chat_id):
                 await message.client.send_read_acknowledge(message.chat_id)

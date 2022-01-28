@@ -41,25 +41,23 @@ def get_current_welcome_settings(chat_id):
 
 
 def add_welcome_setting(chat_id, previous_welcome, reply, f_mesg_id):
-    to_check = get_welcome(chat_id)
-    if not to_check:
-        adder = Welcome(chat_id, previous_welcome, reply, f_mesg_id)
-        SESSION.add(adder)
-        SESSION.commit()
-        return True
-    else:
+    if to_check := get_welcome(chat_id):
         rem = SESSION.query(Welcome).get(str(chat_id))
         SESSION.delete(rem)
         SESSION.commit()
         adder = Welcome(chat_id, previous_welcome, reply, f_mesg_id)
         SESSION.commit()
         return False
+    else:
+        adder = Welcome(chat_id, previous_welcome, reply, f_mesg_id)
+        SESSION.add(adder)
+        SESSION.commit()
+        return True
 
 
 def rm_welcome_setting(chat_id):
     try:
-        rem = SESSION.query(Welcome).get(str(chat_id))
-        if rem:
+        if rem := SESSION.query(Welcome).get(str(chat_id)):
             SESSION.delete(rem)
             SESSION.commit()
             return True

@@ -103,29 +103,30 @@ async def mega_downloader(megadl):
         try:
             raise FileExistsError(errno.EEXIST, os.strerror(errno.EEXIST), file_path)
         except FileExistsError as e:
-            await megadl.edit(f"`{str(e)}`")
+            await megadl.edit(f'`{e}`')
             return None
     downloader = SmartDL(file_url, temp_file_path, progress_bar=False)
     display_message = None
     try:
         downloader.start(blocking=False)
     except HTTPError as e:
-        await megadl.edit(f"**HTTPError**: `{str(e)}`")
+        await megadl.edit(f'**HTTPError**: `{e}`')
         return None
     start = time.time()
     while not downloader.isFinished():
         status = downloader.get_status().capitalize()
-        total_length = downloader.filesize if downloader.filesize else None
+        total_length = downloader.filesize or None
         downloaded = downloader.get_dl_size()
         percentage = int(downloader.get_progress() * 100)
         speed = downloader.get_speed(human=True)
         estimated_total_time = round(downloader.get_eta())
         progress_str = "`{0}` | [{1}{2}] `{3}%`".format(
             status,
-            "".join(["●" for i in range(math.floor(percentage / 10))]),
+            "".join(["●" for _ in range(math.floor(percentage / 10))]),
             "".join(["○" for i in range(10 - math.floor(percentage / 10))]),
             round(percentage, 2),
         )
+
         diff = time.time() - start
         try:
             current_message = (
@@ -161,7 +162,7 @@ async def mega_downloader(megadl):
             P.start()
             P.join()
         except FileNotFoundError as e:
-            await megadl.edit(f"`{str(e)}`")
+            await megadl.edit(f'`{e}`')
             return None
         else:
             await megadl.edit(
@@ -177,32 +178,31 @@ async def mega_downloader(megadl):
                 "`[FILE - CANCELLED]`\n\n"
                 "`Status` : **OK** - received signal cancelled."
             )
-        if resultgd and msg_link:
-            await megadl.respond(
-                "`[FILE - UPLOAD]`\n\n"
-                f"`Name   :` `{file_name}`\n"
-                f"`Size   :` `{humanbytes(resultgd[0])}`\n"
-                f"`Link   :` [{file_name}]({resultgd[1]})\n"
-                "`Status :` **OK** - Successfully uploaded.\n",
-                link_preview=False,
-                reply_to=link_msg_id,
-            )
-            await megadl.delete()
-        elif resultgd and link:
-            await megadl.respond(
-                "`[FILE - UPLOAD]`\n\n"
-                f"`Name   :` `{file_name}`\n"
-                f"`Size   :` `{humanbytes(resultgd[0])}`\n"
-                f"`Link   :` [{file_name}]({resultgd[1]})\n"
-                "`Status :` **OK** - Successfully uploaded.\n",
-                link_preview=False,
-            )
-            await megadl.delete()
+        if resultgd:
+            if msg_link:
+                await megadl.respond(
+                    "`[FILE - UPLOAD]`\n\n"
+                    f"`Name   :` `{file_name}`\n"
+                    f"`Size   :` `{humanbytes(resultgd[0])}`\n"
+                    f"`Link   :` [{file_name}]({resultgd[1]})\n"
+                    "`Status :` **OK** - Successfully uploaded.\n",
+                    link_preview=False,
+                    reply_to=link_msg_id,
+                )
+                await megadl.delete()
+            elif link:
+                await megadl.respond(
+                    "`[FILE - UPLOAD]`\n\n"
+                    f"`Name   :` `{file_name}`\n"
+                    f"`Size   :` `{humanbytes(resultgd[0])}`\n"
+                    f"`Link   :` [{file_name}]({resultgd[1]})\n"
+                    "`Status :` **OK** - Successfully uploaded.\n",
+                    link_preview=False,
+                )
+                await megadl.delete()
 
         if os.path.exists(file_path):
             os.remove(file_path)
-        else:
-            pass
     else:
         await megadl.edit(
             "`Failed to download, " "check heroku Logs for more details.`"

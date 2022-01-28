@@ -33,7 +33,6 @@ def add_flist(chat_id, fed_name):
 
 
 def del_flist(chat_id):
-    rem = SESSION.query(Fban).get(str(chat_id))
-    if rem:
+    if rem := SESSION.query(Fban).get(str(chat_id)):
         SESSION.delete(rem)
         SESSION.commit()
